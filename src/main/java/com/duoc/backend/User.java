@@ -63,7 +63,7 @@ public class User implements UserDetails {
     @Override
     public boolean isAccountNonExpired() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isAccountNonExpired'");
+        return true;
     }
 
     @Override

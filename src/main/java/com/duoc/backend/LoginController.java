@@ -8,34 +8,39 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 @RestController
 public class LoginController {
 
     @Autowired
-    JWTAuthenticationConfig jwtAuthenticationConfig;
+    private UserRepository userRepository;
 
     @Autowired
-    private MyUserDetailsService userDetailsService;
+    private PasswordEncoder passwordEncoder;
 
-    @PostMapping("login")
-    public String login(
+    @Autowired
+    JWTAuthenticationConfig jwtAuthenticationConfig;
+
+   
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(
             @RequestParam("user") String username,
-            @RequestParam("encryptedPass") String encryptedPass) {
+            @RequestParam("encryptedPass") String password) {
 
-        /**
-        * En el ejemplo no se realiza la correcta validación del usuario
-        */
+        User user = userRepository.findByUsername(username);
+       
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        if (!userDetails.getPassword().equals(encryptedPass)) {
-            throw new RuntimeException("Invalid login");
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
         }
 
         String token = jwtAuthenticationConfig.getJWTToken(username);
-        return token;
+        return ResponseEntity.ok(token);
     }
 
 }
